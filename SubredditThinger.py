@@ -1,32 +1,42 @@
 import string
 
-readFile  = "RC_2009-03"
-writeFile = "RC_2009-03_Republican.txt"
-
-MINIMUM_SCORE = 5
-
 def main():
-    fileOpen  = open(readFile, 'r')
-    fileWrite = open(writeFile, 'w')
+    maxFileNumber = 8
+    republicanFile = "RC_2017-11_Republican_TD.txt"
+    democratFile = "RC_2017-11_Democrat_TD.txt"
 
-    lines    = fileOpen.readlines()
-    comments = {}
+    MINIMUM_SCORE = 20
+    
+    democratFile   = open(democratFile, 'w')                    # Open both files to write TD to
+    republicanFile = open(republicanFile, 'w')
+    
+    for fileNumber in range(0, maxFileNumber + 1):              # Opens all 8 files in order to get data from
+        inputFile      = open("outputFile%d.txt" % fileNumber , 'r')
 
-    dataFound = 0
+        lines          = inputFile.readlines()                  # Reads all the lines at once to avoid accessing file too often
+        comments       = {}                                     # because accessing files from the drive is slower than ram
+        dataFound1     = 0
+        dataFound2     = 0
 
-    for line in lines:
-        if line.find("\"subreddit\":\"politics\"") != -1: # In politics subreddit
-            score = findScore(line)
-            if int(score) > MINIMUM_SCORE:
-                dataFound += 1
-                body = formatLine(findBody(line))
-                fileWrite.write(body)
-        else:
-            continue
-
-    fileOpen.close()
-    fileWrite.close()
-    print(str(dataFound) + " valid comments with a score of more than " + str(MINIMUM_SCORE) + " found!")
+        for line in lines:
+            if line.find("\"subreddit\":\"democrats\"") != -1:       # In democratic subreddit
+                score = findScore(line)
+                if int(score) > MINIMUM_SCORE:                      # Checks for minimum score
+                    dataFound1 += 1
+                    body = formatLine(findBody(line))               # Gets and formats the comment
+                    democratFile.write(body)
+            elif line.find("\"subreddit\":\"Republican\"") != -1:   # In republican subreddit
+                score = findScore(line)
+                if int(score) > MINIMUM_SCORE:                      # Checks for minimum score
+                    dataFound2 += 1
+                    body = formatLine(findBody(line))               # Gets and formats body
+                    republicanFile.write(body)
+            else:
+                continue
+        inputFile.close()
+        print("Finished outputFile%d with %d D and %d R data points" % (fileNumber, dataFound1, dataFound2))
+    democratFile.close()
+    republicanFile.close()
 
 def formatLine(line):
     while line.find("\\t") != -1:
